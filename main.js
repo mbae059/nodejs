@@ -38,7 +38,7 @@ const app = http.createServer(function (request, response) {
     if (queryData.id === undefined) {
       fs.readdir("content", "utf-8", (err, data) => {
         if (err) throw err;
-        title = "Welcome";
+        const title = "Welcome";
         description = "Hello, Nodejs";
         let fileList = templateList(data);
         let template = templateHTML(
@@ -71,7 +71,7 @@ const app = http.createServer(function (request, response) {
   } else if (queryPathName === "/create") {
     fs.readdir("content", "utf-8", (err, data) => {
       if (err) throw err;
-      title = "create";
+      const title = "create";
       let fileList = templateList(data);
       let template = templateHTML(
         title,
@@ -93,6 +93,7 @@ const app = http.createServer(function (request, response) {
   } else if (queryPathName === "/create_process") {
     let body = "";
     request.on("data", (data) => {
+      //get title and description via textarea
       body += data;
     });
 
@@ -104,10 +105,12 @@ const app = http.createServer(function (request, response) {
       fs.writeFile(
         `content/${titleReceivedByPost}`,
         descriptionReceivedByPost,
+        "utf8",
         (err) => {
           if (err) throw err;
           console.log("This file has been saved!");
           response.writeHead(302, { Location: `/?id=${titleReceivedByPost}` });
+          response.end();
         }
       );
     });
