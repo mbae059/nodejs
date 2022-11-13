@@ -2,8 +2,6 @@ const http = require("http");
 const fs = require("fs");
 const url = require("url");
 const qs = require("querystring");
-const { formatWithOptions } = require("util");
-const { title } = require("process");
 const portNumber = 8000;
 function templateList(data) {
   let fileList = "<ol>";
@@ -39,9 +37,9 @@ const app = http.createServer(function (request, response) {
       fs.readdir("content", "utf-8", (err, data) => {
         if (err) throw err;
         const title = "Welcome";
-        description = "Hello, Nodejs";
-        let fileList = templateList(data);
-        let template = templateHTML(
+        const description = "Hello, Nodejs";
+        const fileList = templateList(data);
+        const template = templateHTML(
           title,
           fileList,
           `<h2>${title}</h2>${description}`
@@ -56,7 +54,7 @@ const app = http.createServer(function (request, response) {
         fs.readdir("content", "utf-8", (err, data) => {
           if (err) throw err;
           let title = queryData.id;
-          fileList = templateList(data);
+          const fileList = templateList(data);
           let template = templateHTML(
             title,
             fileList,
@@ -72,8 +70,8 @@ const app = http.createServer(function (request, response) {
     fs.readdir("content", "utf-8", (err, data) => {
       if (err) throw err;
       const title = "create";
-      let fileList = templateList(data);
-      let template = templateHTML(
+      const fileList = templateList(data);
+      const template = templateHTML(
         title,
         fileList,
         `<form action="http://localhost:${portNumber}/create_process" method="post">
@@ -93,27 +91,21 @@ const app = http.createServer(function (request, response) {
   } else if (queryPathName === "/create_process") {
     let body = "";
     request.on("data", (data) => {
-      //get title and description via textarea
       body += data;
+      console.log(data);
     });
-
-    response.on("finish", () => {
-      const parseBody = qs.parse(body);
-      const titleReceivedByPost = parseBody.title;
-      const descriptionReceivedByPost = parseBody.description;
-      console.log(titleReceivedByPost);
-      fs.writeFile(
-        `content/${titleReceivedByPost}`,
-        descriptionReceivedByPost,
-        "utf8",
-        (err) => {
-          if (err) throw err;
-          console.log("This file has been saved!");
-          response.writeHead(302, { Location: `/?id=${titleReceivedByPost}` });
-          response.end();
-        }
-      );
+    request.on("end", () => {
+      const post = qs.parse(body);
+      const title = post.title;
+      const description = post.description;
+      fs.writeFile(`content/${title}`, description, "utf8", (err) => {
+        if (err) throw err;
+        response.writeHead(200);
+        response.end("Success");
+      });
     });
+    response.writeHead(200);
+    response.end("Success");
   } else {
     response.writeHead(404);
     response.end("NOT FOUND");
